@@ -4,8 +4,6 @@ const cors = require('cors');
 const app = express();
 // include middleware to parse post requests
 const bodyParser = require("body-parser");
-// include valid-url for url validation
-const validUrl = require('valid-url');
 
 // Basic Configuration
 const port = process.env.PORT || 3000;
@@ -33,21 +31,13 @@ const urlDb = {};
 // var to act as the shortened url
 let shorturlId = 0;
 
-function isValidUrl(string) {
-  try {
-    new URL(string);
-    return true;
-  } catch (err) {
-    return false;
-  }
-}
-
 app.post(shorturl, (req, res) => {
   const originalUrl = req.body.url;
    
   // validate the URL format
-  if (!isValidUrl(originalUrl)) {
-    return res.status(400).json({ error: 'invalid url' });
+  const validUrlRegex = /^https?:\/\//;
+  if (!validUrlRegex.test(originalUrl)) {
+    return res.json({ error: 'invalid url' });
   }
 
   // add one to the short-id value and assign it as the short-url
@@ -68,7 +58,7 @@ app.get(shorturl+'/:short_url', (req, res) => {
 
   // If not found, return an error
   if (!originalUrl) {
-    return res.status(404).json({ error: 'invalid url' });
+    return res.json({ error: 'invalid url' });
   }
 
   // otherwise, redirect to the original URL
